@@ -23,16 +23,23 @@ class MemoListActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         bindMemoList(binding.rvMemo, vm)
+
+        vm.startLoad()
     }
 
     private fun bindMemoList(recyclerView: RecyclerView, viewModel: MemoListViewModel) {
-        recyclerView.layoutManager = LinearLayoutManager(recyclerView.context, RecyclerView.VERTICAL, false)
+        val adapter = MemoListAdapter()
+        recyclerView.adapter = adapter
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.stateFlow.collectLatest {
-
-
+                    when (it) {
+                        None -> Unit
+                        is OnLoad -> {
+                            adapter.submitList(it.itemList)
+                        }
+                    }
                 }
             }
         }
