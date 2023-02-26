@@ -12,6 +12,7 @@ import com.example.memolist.databinding.ActivityMemoListBinding
 import dagger.hilt.EntryPoint
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -33,12 +34,12 @@ class MemoListActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.stateFlow.collectLatest {
+                viewModel.stateFlow.mapLatest { it.listState }.collectLatest {
                     when (it) {
-                        None -> Unit
-                        is OnLoad -> {
+                        MemoListState.ListState.None -> Unit
+                        is MemoListState.ListState.OnError -> Unit
+                        is MemoListState.ListState.OnLoad ->
                             adapter.submitList(it.itemList)
-                        }
                     }
                 }
             }

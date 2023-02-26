@@ -1,9 +1,9 @@
-package com.example.repository
+package com.example.data.local
 
 import com.example.model.Memo
 import com.example.model.ShortenMemo
 
-interface MemoRepository {
+interface MemoLocalDataSource {
     fun getMemo(id: String): Memo?
 
     fun getShortenMemoList(): List<ShortenMemo>
