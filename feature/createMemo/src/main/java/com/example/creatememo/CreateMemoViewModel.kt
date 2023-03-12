@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-internal const val EXTRA_MEMO_ID = "EXTRA_MEMO_ID"
 
 @HiltViewModel
 internal class CreateMemoViewModel @Inject constructor(
@@ -30,7 +29,8 @@ internal class CreateMemoViewModel @Inject constructor(
     override val _stateFlow: MutableStateFlow<CreateMemoState> = MutableStateFlow(CreateMemoState.initial)
 
     init {
-        savedStateHandle.get<String?>(EXTRA_MEMO_ID)?.let {
+        val param = savedStateHandle.get<CreateMemoActivity.Param>(EXTRA_CREATE_MEMO_PARAM)
+        param?.id?.let {
             viewModelScope.launch {
                 _stateFlow.value = getMemo(it)
             }

@@ -26,11 +26,11 @@ class MemoListAdapter : ListAdapter<ShortenMemo, MemoListAdapter.ViewHolder>(ite
 
 private val itemCallback = object : DiffUtil.ItemCallback<ShortenMemo>() {
     override fun areItemsTheSame(oldItem: ShortenMemo, newItem: ShortenMemo): Boolean {
-        TODO("Not yet implemented")
+        return oldItem.id == newItem.id
     }
 
     override fun areContentsTheSame(oldItem: ShortenMemo, newItem: ShortenMemo): Boolean {
-        TODO("Not yet implemented")
+        return oldItem == newItem
     }
 
 }

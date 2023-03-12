@@ -25,6 +25,8 @@ android {
 }
 
 dependencies {
+    implementation project(":feature:common")
+    implementation project(":feature:createMemo")
     implementation project(":feature:memoList")
     implementation project(":domain")
     implementation project(":data")

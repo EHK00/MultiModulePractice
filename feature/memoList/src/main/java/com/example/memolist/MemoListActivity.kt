@@ -6,18 +6,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.common.Navigator
 import com.example.memolist.databinding.ActivityMemoListBinding
-import dagger.hilt.EntryPoint
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MemoListActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var navigator: Navigator
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val vm by viewModels<MemoListViewModel>()
@@ -25,6 +29,13 @@ class MemoListActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         bindMemoList(binding.rvMemo, vm)
+        bindNewMemoButton(binding, vm)
+    }
+
+    private fun bindNewMemoButton(binding: ActivityMemoListBinding, viewModel: MemoListViewModel) {
+        binding.btnNewMemo.setOnClickListener {
+            navigator.gotoCreateMemoScreen(this, null)
+        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

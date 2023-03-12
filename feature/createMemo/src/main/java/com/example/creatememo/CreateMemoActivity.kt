@@ -1,6 +1,9 @@
 package com.example.creatememo
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
@@ -10,11 +13,26 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.creatememo.databinding.ActivityCreateMemoBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
+
+internal const val EXTRA_CREATE_MEMO_PARAM = "EXTRA_CREATE_MEMO_PARAM"
 
 @AndroidEntryPoint
 class CreateMemoActivity : AppCompatActivity() {
+    @Parcelize
+    data class Param(
+        val id: String?
+    ) : Parcelable
+
+    companion object {
+        fun createIntent(context: Context, param: Param): Intent {
+            return Intent(context, CreateMemoActivity::class.java).apply {
+                putExtra(EXTRA_CREATE_MEMO_PARAM, param)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityCreateMemoBinding.inflate(layoutInflater)

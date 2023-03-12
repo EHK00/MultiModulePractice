@@ -1,6 +1,8 @@
 package com.example.mymemo.di
 
-import com.example.mymemo.ResourceProviderImp
+import com.example.data.FileProvider
+import com.example.mymemo.FileProviderImpl
+import com.example.mymemo.ResourceProviderImpl
 import com.example.provider.ResourceProvider
 import dagger.Binds
 import dagger.Module
@@ -14,6 +16,12 @@ abstract class ProviderModule {
     @Binds
     @Singleton
     abstract fun bindResourceProvider(
-        provider: ResourceProviderImp
+        provider: ResourceProviderImpl
     ): ResourceProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindFileProvider(
+        provider: FileProviderImpl
+    ): FileProvider
 }

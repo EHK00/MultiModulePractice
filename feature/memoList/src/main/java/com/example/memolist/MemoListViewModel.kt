@@ -36,7 +36,6 @@ class MemoListViewModel @Inject constructor(
                 }
             }
         }
-
     }
 }
 
