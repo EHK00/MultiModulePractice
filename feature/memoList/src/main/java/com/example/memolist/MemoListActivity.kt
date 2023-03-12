@@ -11,23 +11,23 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.memolist.databinding.ActivityMemoListBinding
 import dagger.hilt.EntryPoint
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MemoListActivity : AppCompatActivity() {
-    private val vm by viewModels<MemoListViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val vm by viewModels<MemoListViewModel>()
         val binding = ActivityMemoListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         bindMemoList(binding.rvMemo, vm)
-
-        vm.startLoad()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun bindMemoList(recyclerView: RecyclerView, viewModel: MemoListViewModel) {
         val adapter = MemoListAdapter()
         recyclerView.adapter = adapter
@@ -36,9 +36,9 @@ class MemoListActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.stateFlow.mapLatest { it.listState }.collectLatest {
                     when (it) {
-                        MemoListState.ListState.None -> Unit
-                        is MemoListState.ListState.OnError -> Unit
-                        is MemoListState.ListState.OnLoad ->
+                        ListState.None -> Unit
+                        is ListState.OnError -> Unit
+                        is ListState.OnLoad ->
                             adapter.submitList(it.itemList)
                     }
                 }

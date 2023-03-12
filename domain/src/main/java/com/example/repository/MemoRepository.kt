@@ -7,4 +7,6 @@ interface MemoRepository {
     fun getMemo(id: String): Memo?
 
     fun getShortenMemoList(): List<ShortenMemo>
+
+    fun saveMemo(memo:Memo): Boolean
 }

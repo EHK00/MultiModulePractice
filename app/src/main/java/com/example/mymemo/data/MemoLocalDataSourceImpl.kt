@@ -10,13 +10,34 @@ class MemoLocalDataSourceImpl @Inject constructor(
 ) : MemoLocalDataSource {
 
     override fun getMemo(id: String): Memo? {
-        return null
-//        val list = getShortenMemoList()
-//        return list.find { it.id == id }
+        val memoList = pref.getParcelable<List<Memo>>(MyMemoSharedPref.PrefKey.MemoList)
+        return memoList?.find { it.id == id }
     }
 
     override fun getShortenMemoList(): List<ShortenMemo> {
-        return pref.getParcelable<List<ShortenMemo>>(MyMemoSharedPref.PrefKey.MemoList)
+        return pref.getParcelable<List<Memo>>(MyMemoSharedPref.PrefKey.MemoList)
+            ?.map { it.toShorten() }
             ?: emptyList()
     }
+
+    override fun saveMemo(memo: Memo): Boolean {
+        val memoList = pref.getParcelable<List<Memo>>(MyMemoSharedPref.PrefKey.MemoList)
+            ?.toMutableList()
+            ?: mutableListOf()
+        memoList.add(memo)
+        return try {
+            pref.setParcelableCollection(MyMemoSharedPref.PrefKey.MemoList, memoList)
+            true
+        } catch (e: Exception) {
+            false
+        }
+
+    }
+}
+
+private fun Memo.toShorten(): ShortenMemo {
+    return ShortenMemo(
+        id = id,
+        simpleText = content
+    )
 }

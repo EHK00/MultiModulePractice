@@ -16,4 +16,8 @@ class MemoRepositoryImpl @Inject constructor(
     override fun getShortenMemoList(): List<ShortenMemo> {
         return disk.getShortenMemoList()
     }
+
+    override fun saveMemo(memo: Memo): Boolean {
+        return disk.saveMemo(memo)
+    }
 }

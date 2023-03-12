@@ -34,6 +34,14 @@ class MyMemoSharedPref(
         pref.edit().putString(key.name, data).apply()
     }
 
+    fun setParcelableCollection(key: PrefKey, value: Collection<Parcelable?>) {
+        val data = value.let {
+            val adapter = moshi.adapter(value.javaClass)
+            adapter.toJson(value)
+        }
+        pref.edit().putString(key.name, data).apply()
+    }
+
 
     enum class PrefKey {
         MemoList,
