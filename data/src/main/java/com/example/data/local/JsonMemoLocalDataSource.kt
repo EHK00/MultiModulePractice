@@ -1,11 +1,8 @@
 package com.example.data.local
 
-import android.content.Context
 import com.example.data.FileProvider
 import com.example.model.Memo
 import com.example.model.ShortenMemo
-import com.squareup.moshi.Moshi
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class JsonMemoLocalDataSource @Inject constructor(
