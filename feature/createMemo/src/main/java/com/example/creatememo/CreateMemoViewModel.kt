@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 
@@ -30,10 +31,8 @@ internal class CreateMemoViewModel @Inject constructor(
 
     init {
         val param = savedStateHandle.get<CreateMemoActivity.Param>(EXTRA_CREATE_MEMO_PARAM)
-        param?.id?.let {
-            viewModelScope.launch {
-                _stateFlow.value = getMemo(it)
-            }
+        viewModelScope.launch {
+            _stateFlow.value = getMemo(param?.id)
         }
         observeUiAction()
     }
@@ -46,36 +45,92 @@ internal class CreateMemoViewModel @Inject constructor(
 
     private fun observeUiAction() = viewModelScope.launch {
         _uiActionFlow.collectLatest { action ->
-            _stateFlow.update { state ->
-                when (action) {
-                    is CreateMemoUiAction.InputContentText -> {
+            when (action) {
+                is CreateMemoUiAction.InputContentText -> {
+                    _stateFlow.update { state ->
                         state.copy(content = action.text)
                     }
-                    is CreateMemoUiAction.InputTitleText -> {
+                }
+                is CreateMemoUiAction.InputTitleText -> {
+                    _stateFlow.update { state ->
                         state.copy(subject = action.text)
                     }
                 }
+                is CreateMemoUiAction.SaveMemo -> {
+                    _stateFlow.update { it.copy(isLoading = true) }
+                    val memo = action.currentState.toMemo()
+                    when (val result = saveMemoUc(SaveMemoUc.Param(memo))) {
+                        is Resource.Success -> {
+                            _stateFlow.update {
+                                val notifications = it.notifications.toMutableList().apply {
+                                    add("Success")
+                                }
+
+                                it.copy(
+                                    isLoading = false,
+                                    notifications = notifications
+                                )
+                            }
+                        }
+                        is Resource.Error -> {
+                            val errorMessage = result.error?.message ?: result.error.toString()
+                            _stateFlow.update {
+                                val notifications = it.notifications.toMutableList().apply {
+                                    add(errorMessage)
+                                }
+
+                                it.copy(
+                                    isLoading = false,
+                                    notifications = notifications
+                                )
+                            }
+                        }
+                    }
+
+
+                }
+                is CreateMemoUiAction.OnShowMessage ->
+                    _stateFlow.update {
+                        val newNotifications = it.notifications.toMutableList().apply {
+                            remove(action.message)
+                        }
+                        it.copy(
+                            notifications = newNotifications
+                        )
+                    }
             }
         }
     }
 
 
-    private suspend fun getMemo(id: String): CreateMemoState {
+    private suspend fun getMemo(id: String?): CreateMemoState {
+        if (id == null) {
+            return CreateMemoState(
+                id = UUID.randomUUID().toString(),
+                subject = "",
+                content = "",
+                notifications = emptyList(),
+                isLoading = false,
+            )
+        }
+
         return when (val result = getMemoUc(GetMemoUc.Param(id))) {
             is Resource.Success -> {
                 val data = result.dataModel
                 CreateMemoState(
+                    id = data.memo.id,
                     subject = data.memo.subject,
                     content = data.memo.content,
-                    errorText = null,
+                    notifications = emptyList(),
                     isLoading = false,
                 )
             }
             is Resource.Error -> {
                 CreateMemoState(
+                    id = UUID.randomUUID().toString(),
                     subject = "",
                     content = "",
-                    errorText = result.error.toString(),
+                    notifications = emptyList(),
                     isLoading = false,
                 )
             }
@@ -83,17 +138,25 @@ internal class CreateMemoViewModel @Inject constructor(
     }
 
 
+    private fun CreateMemoState.toMemo(): Memo {
+        return Memo(
+            id = this.id,
+            subject = this.subject,
+            content = this.content
+        )
+    }
 }
 
 internal data class CreateMemoState(
+    val id: String,
     val subject: String,
     val content: String,
-    val errorText: String?,
+    val notifications: List<String>,
     val isLoading: Boolean,
 ) : State {
     companion object {
         val initial: CreateMemoState = CreateMemoState(
-            "", "", null, true
+            "", "", "", listOf(), false
         )
     }
 
@@ -102,5 +165,6 @@ internal data class CreateMemoState(
 internal sealed interface CreateMemoUiAction : UiAction {
     data class InputTitleText(val text: String) : CreateMemoUiAction
     data class InputContentText(val text: String) : CreateMemoUiAction
-
+    data class SaveMemo(val currentState: CreateMemoState) : CreateMemoUiAction
+    data class OnShowMessage(val message: String) : CreateMemoUiAction
 }

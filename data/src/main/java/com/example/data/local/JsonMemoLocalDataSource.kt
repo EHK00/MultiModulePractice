@@ -24,16 +24,18 @@ class JsonMemoLocalDataSource @Inject constructor(
     }
 
     override fun saveMemo(memo: Memo): Boolean {
-        val memoList = fileProvider.fromJson(JsonKey.GetMemoList.fileName, Array<Memo>::class.java)?.toMutableList()
-            ?: mutableListOf()
-        memoList.add(0, memo)
+        val memoMap = fileProvider.fromJson(JsonKey.GetMemoList.fileName, Array<Memo>::class.java)?.associateBy { it.id }
+            ?.toMutableMap()
+            ?: mutableMapOf()
+        memoMap[memo.id] = memo
+        val memoArray = memoMap.values.toTypedArray()
+        fileProvider.saveAsJsonFile(JsonKey.GetMemoList.fileName, memoArray)
         return true
     }
 
     enum class JsonKey(val fileName: String) {
-        GetMemoList("")
+        GetMemoList("GetMemoList")
     }
-
 }
 
 private fun Memo.toShorten(): ShortenMemo {

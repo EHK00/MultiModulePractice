@@ -3,6 +3,7 @@ package com.example.domain
 import com.example.Resource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 abstract class UseCase<in P, out R>(private val dispatcher: CoroutineDispatcher) {
     suspend operator fun invoke(parameters: P): Resource<R> {
@@ -13,6 +14,7 @@ abstract class UseCase<in P, out R>(private val dispatcher: CoroutineDispatcher)
                 }
             }
         } catch (e: Exception) {
+            Timber.e(e)
             Resource.Error(e)
         }
     }

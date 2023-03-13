@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
@@ -13,6 +16,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.creatememo.databinding.ActivityCreateMemoBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 
@@ -41,6 +46,21 @@ class CreateMemoActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         bindSubject(vm, binding)
+        bindContent(vm, binding.etContent)
+        bindSaveButton(vm, binding.btnSave)
+        bindToast(vm)
+    }
+
+    private fun bindToast(vm: CreateMemoViewModel) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                vm.stateFlow.map { it.notifications }.collectLatest {
+                    val message = it.firstOrNull() ?: return@collectLatest
+                    Toast.makeText(this@CreateMemoActivity, message, Toast.LENGTH_LONG).show()
+                    vm.uiAction(CreateMemoUiAction.OnShowMessage(message))
+                }
+            }
+        }
     }
 
     private fun bindSubject(vm: CreateMemoViewModel, binding: ActivityCreateMemoBinding) {
@@ -59,19 +79,33 @@ class CreateMemoActivity : AppCompatActivity() {
         }
     }
 
-    private fun bindContent(vm: CreateMemoViewModel, binding: ActivityCreateMemoBinding) {
+    private fun bindContent(vm: CreateMemoViewModel, etContent: EditText) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 vm.stateFlow.collectLatest { data ->
-                    if (binding.etContent.text.toString() != data.content) {
-                        binding.etContent.setText(data.content)
+                    if (etContent.text.toString() != data.content) {
+                        etContent.setText(data.content)
                     }
                 }
             }
         }
 
-        binding.etContent.doAfterTextChanged {
+        etContent.doAfterTextChanged {
             vm.uiAction(CreateMemoUiAction.InputContentText(it.toString()))
         }
+    }
+
+    private fun bindSaveButton(vm: CreateMemoViewModel, button: Button) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                vm.stateFlow.map { it.isLoading }.collectLatest {
+                    button.isEnabled = !it
+                }
+            }
+        }
+        button.setOnClickListener {
+            vm.uiAction(CreateMemoUiAction.SaveMemo(vm.stateFlow.value))
+        }
+
     }
 }

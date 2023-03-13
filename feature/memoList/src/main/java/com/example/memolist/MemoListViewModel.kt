@@ -10,30 +10,46 @@ import com.example.model.ShortenMemo
 import com.example.repository.MemoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MemoListViewModel @Inject constructor(
+internal class MemoListViewModel @Inject constructor(
     private val getMemoListUc: GetMemoListUc,
 ) : BaseViewModel<MemoListState, MemoListAction>() {
     override val _stateFlow: MutableStateFlow<MemoListState> = MutableStateFlow(initialState)
 
     init {
-        viewModelScope.launch {
-            val result = getMemoListUc(Unit)
-            _stateFlow.update { state ->
-                when (result) {
-                    is Resource.Success -> {
-                        val data = result.dataModel
-                        state.copy(listState = ListState.OnLoad(data.list))
-                    }
-                    is Resource.Error -> {
-                        val message = result.error?.message ?: result.error.toString()
-                        state.copy(listState = ListState.OnError(message))
-                    }
+        observeUiAction()
+    }
+
+    private fun observeUiAction() = viewModelScope.launch {
+        _uiActionFlow.collectLatest { action ->
+            when (action) {
+                MemoListAction.LoadMemoList -> {
+                    _stateFlow.update { loadMemoList(it) }
                 }
+            }
+        }
+    }
+
+    fun uiAction(action: MemoListAction) {
+        viewModelScope.launch {
+            _uiActionFlow.emit(action)
+        }
+    }
+
+    private suspend fun loadMemoList(state: MemoListState): MemoListState {
+        return when (val result = getMemoListUc(Unit)) {
+            is Resource.Success -> {
+                val data = result.dataModel
+                state.copy(listState = ListState.OnLoad(data.list))
+            }
+            is Resource.Error -> {
+                val message = result.error?.message ?: result.error.toString()
+                state.copy(listState = ListState.OnError(message))
             }
         }
     }
@@ -58,6 +74,8 @@ sealed interface ListState {
     ) : ListState
 }
 
-class MemoListAction : UiAction
+internal sealed interface MemoListAction : UiAction {
+    object LoadMemoList : MemoListAction
+}
 
 
