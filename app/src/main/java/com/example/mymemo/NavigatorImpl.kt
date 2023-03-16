@@ -9,8 +9,7 @@ import javax.inject.Inject
 
 class NavigatorImpl @Inject constructor(): Navigator {
     override fun gotoCreateMemoScreen(context: Context, id: String?) {
-        CreateMemoActivity.createIntent(context, CreateMemoActivity.Param(id))
-        val intent = Intent(context, CreateMemoActivity::class.java)
+        val intent = CreateMemoActivity.createIntent(context, CreateMemoActivity.Param(id))
         context.startActivity(intent)
     }
 

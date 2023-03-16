@@ -6,12 +6,25 @@
     android:layout_height="match_parent"
     >
 
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMemo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        />
+
+
+    <TextView
+        android:id="@+id/tvError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ERROR"
+        app:layout_constraintBottom_toBottomOf="@id/rvMemo"
+        app:layout_constraintEnd_toEndOf="@id/rvMemo"
+        app:layout_constraintStart_toStartOf="@id/rvMemo"
+        app:layout_constraintTop_toTopOf="@id/rvMemo"
         />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

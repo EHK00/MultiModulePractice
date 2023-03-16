@@ -9,6 +9,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -16,10 +17,11 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.creatememo.databinding.ActivityCreateMemoBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
+import timber.log.Timber
 
 internal const val EXTRA_CREATE_MEMO_PARAM = "EXTRA_CREATE_MEMO_PARAM"
 
@@ -49,15 +51,27 @@ class CreateMemoActivity : AppCompatActivity() {
         bindContent(vm, binding.etContent)
         bindSaveButton(vm, binding.btnSave)
         bindToast(vm)
+        bindNavigate(vm)
+    }
+
+    private fun bindNavigate(vm: CreateMemoViewModel) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                vm.stateFlow.map { it.onComplete }.collect {
+                    if (it) finish()
+                    vm.uiAction(CreateMemoUiAction.AfterNavigate)
+                }
+            }
+        }
     }
 
     private fun bindToast(vm: CreateMemoViewModel) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                vm.stateFlow.map { it.notifications }.collectLatest {
-                    val message = it.firstOrNull() ?: return@collectLatest
+                vm.stateFlow.distinctUntilChangedBy { it.notifications }.collect {
+                    val message = it.notifications.firstOrNull() ?: return@collect
                     Toast.makeText(this@CreateMemoActivity, message, Toast.LENGTH_LONG).show()
-                    vm.uiAction(CreateMemoUiAction.OnShowMessage(message))
+                    vm.uiAction(CreateMemoUiAction.AfterShowMessage(message))
                 }
             }
         }
@@ -98,14 +112,14 @@ class CreateMemoActivity : AppCompatActivity() {
     private fun bindSaveButton(vm: CreateMemoViewModel, button: Button) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                vm.stateFlow.map { it.isLoading }.collectLatest {
-                    button.isEnabled = !it
+                vm.stateFlow.distinctUntilChangedBy { it.isLoading }.collectLatest {
+                    button.isEnabled = !it.isLoading
                 }
             }
         }
+
         button.setOnClickListener {
             vm.uiAction(CreateMemoUiAction.SaveMemo(vm.stateFlow.value))
         }
-
     }
 }

@@ -7,7 +7,6 @@ import com.example.common.State
 import com.example.common.UiAction
 import com.example.domain.GetMemoListUc
 import com.example.model.ShortenMemo
-import com.example.repository.MemoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -30,6 +29,15 @@ internal class MemoListViewModel @Inject constructor(
             when (action) {
                 MemoListAction.LoadMemoList -> {
                     _stateFlow.update { loadMemoList(it) }
+                }
+                is MemoListAction.ClickMemo -> {
+                    _stateFlow.update { it.copy(navigateState = NavigateState.CreateMemo(action.memo.id)) }
+                }
+                MemoListAction.CreateMemo -> {
+                    _stateFlow.update { it.copy(navigateState = NavigateState.CreateMemo(null)) }
+                }
+                MemoListAction.AfterNavigation -> {
+                    _stateFlow.update { it.copy(navigateState = NavigateState.None) }
                 }
             }
         }
@@ -59,12 +67,14 @@ private val initialState: MemoListState = MemoListState(
     listState = ListState.None
 )
 
-data class MemoListState(
-    val listState: ListState
+internal data class MemoListState(
+    val listState: ListState,
+    val navigateState: NavigateState = NavigateState.None,
 ) : State
 
 sealed interface ListState {
     object None : ListState
+
     data class OnLoad(
         val itemList: List<ShortenMemo>
     ) : ListState
@@ -76,6 +86,14 @@ sealed interface ListState {
 
 internal sealed interface MemoListAction : UiAction {
     object LoadMemoList : MemoListAction
+    data class ClickMemo(val memo: ShortenMemo) : MemoListAction
+    object CreateMemo : MemoListAction
+    object AfterNavigation : MemoListAction
+}
+
+internal sealed interface NavigateState {
+    object None : NavigateState
+    data class CreateMemo(val id: String?) : NavigateState
 }
 
 

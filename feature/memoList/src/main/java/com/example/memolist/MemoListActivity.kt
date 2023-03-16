@@ -1,9 +1,9 @@
 package com.example.memolist
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -11,11 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.common.Navigator
 import com.example.memolist.databinding.ActivityMemoListBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,7 +31,8 @@ class MemoListActivity : AppCompatActivity() {
 
         bindMemoList(binding.rvMemo, vm)
         bindNewMemoButton(binding, vm)
-        bindToast(binding, vm)
+        bindErrorText(binding, vm)
+        bindNavigate(vm)
     }
 
     override fun onStart() {
@@ -41,12 +40,28 @@ class MemoListActivity : AppCompatActivity() {
         vm.uiAction(MemoListAction.LoadMemoList)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun bindToast(binding: ActivityMemoListBinding, viewModel: MemoListViewModel) {
+    private fun bindNavigate(viewModel: MemoListViewModel) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.stateFlow.mapLatest { it.listState }.filterIsInstance<ListState.OnError>().collectLatest {
-                    Toast.makeText(this@MemoListActivity, it.errorMessage, Toast.LENGTH_LONG).show()
+                viewModel.stateFlow.distinctUntilChangedBy { it.navigateState }.map { it.navigateState }.collect {
+                    when (it) {
+                        is NavigateState.CreateMemo -> {
+                            navigator.gotoCreateMemoScreen(this@MemoListActivity, it.id)
+                            vm.uiAction(MemoListAction.AfterNavigation)
+                        }
+                        NavigateState.None -> Unit
+                    }
+                }
+            }
+        }
+    }
+
+    private fun bindErrorText(binding: ActivityMemoListBinding, viewModel: MemoListViewModel) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.stateFlow.map { it.listState }.collectLatest {
+                    binding.tvError.isVisible = it is ListState.OnError
+                    binding.tvError.text = (it as? ListState.OnError)?.errorMessage
                 }
             }
         }
@@ -55,24 +70,21 @@ class MemoListActivity : AppCompatActivity() {
 
     private fun bindNewMemoButton(binding: ActivityMemoListBinding, viewModel: MemoListViewModel) {
         binding.btnNewMemo.setOnClickListener {
-            navigator.gotoCreateMemoScreen(this, null)
+            vm.uiAction(MemoListAction.CreateMemo)
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private fun bindMemoList(recyclerView: RecyclerView, viewModel: MemoListViewModel) {
-        val adapter = MemoListAdapter()
+        val adapter = MemoListAdapter {
+            viewModel.uiAction(MemoListAction.ClickMemo(it))
+        }
         recyclerView.adapter = adapter
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.stateFlow.mapLatest { it.listState }.collectLatest {
-                    when (it) {
-                        ListState.None -> Unit
-                        is ListState.OnError -> Unit
-                        is ListState.OnLoad ->
-                            adapter.submitList(it.itemList)
-                    }
+                viewModel.stateFlow.map { it.listState }.collectLatest {
+                    recyclerView.isVisible = it is ListState.OnLoad
+                    adapter.submitList((it as? ListState.OnLoad)?.itemList ?: listOf())
                 }
             }
         }

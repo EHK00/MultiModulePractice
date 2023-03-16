@@ -8,18 +8,40 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.memolist.databinding.ItemMemoBinding
 import com.example.model.ShortenMemo
 
-class MemoListAdapter : ListAdapter<ShortenMemo, MemoListAdapter.ViewHolder>(itemCallback) {
+class MemoListAdapter(
+    private val onClick: (ShortenMemo) -> Unit
+) : ListAdapter<ShortenMemo, MemoListAdapter.ViewHolder>(itemCallback) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(ItemMemoBinding.inflate(LayoutInflater.from(parent.context)))
+        return ViewHolder(ItemMemoBinding.inflate(LayoutInflater.from(parent.context)), onClick)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    class ViewHolder(private val binding: ItemMemoBinding) : RecyclerView.ViewHolder(binding.root) {
+    override fun onViewRecycled(holder: ViewHolder) {
+        holder.recycle()
+    }
+
+    class ViewHolder(
+        private val binding: ItemMemoBinding,
+        private val onClick: (ShortenMemo) -> Unit
+    ) : RecyclerView.ViewHolder(binding.root) {
+        private var item: ShortenMemo? = null
+
+        init {
+            binding.tvText.setOnClickListener {
+                item?.let { onClick.invoke(it) }
+            }
+        }
+
         fun bind(item: ShortenMemo) {
+            this.item = item
             binding.tvText.text = item.simpleText
+        }
+
+        fun recycle() {
+            item = null
         }
     }
 }
