@@ -27,11 +27,6 @@ internal const val EXTRA_CREATE_MEMO_PARAM = "EXTRA_CREATE_MEMO_PARAM"
 
 @AndroidEntryPoint
 class CreateMemoActivity : AppCompatActivity() {
-    @Parcelize
-    data class Param(
-        val id: String?
-    ) : Parcelable
-
     companion object {
         fun createIntent(context: Context, param: Param): Intent {
             return Intent(context, CreateMemoActivity::class.java).apply {
@@ -40,10 +35,11 @@ class CreateMemoActivity : AppCompatActivity() {
         }
     }
 
+    private val vm: CreateMemoViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityCreateMemoBinding.inflate(layoutInflater)
-        val vm: CreateMemoViewModel by viewModels()
 
         setContentView(binding.root)
 
@@ -122,4 +118,10 @@ class CreateMemoActivity : AppCompatActivity() {
             vm.uiAction(CreateMemoUiAction.SaveMemo(vm.stateFlow.value))
         }
     }
+
+
+    @Parcelize
+    data class Param(
+        val id: String?
+    ) : Parcelable
 }

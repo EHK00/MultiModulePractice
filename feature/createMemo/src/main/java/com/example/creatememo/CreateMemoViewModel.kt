@@ -137,9 +137,7 @@ internal data class CreateMemoState(
     val onComplete: Boolean = false,
 ) : State {
     companion object {
-        val initial: CreateMemoState = CreateMemoState(
-            "", "", "",
-        )
+        val initial: CreateMemoState = CreateMemoState("", "", "")
     }
 
 }

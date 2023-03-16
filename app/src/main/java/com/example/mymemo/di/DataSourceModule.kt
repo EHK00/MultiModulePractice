@@ -3,7 +3,6 @@ package com.example.mymemo.di
 import android.content.Context
 import com.example.data.local.JsonMemoLocalDataSource
 import com.example.data.local.MemoLocalDataSource
-import com.example.mymemo.data.MyMemoSharedPref
 import com.squareup.moshi.Moshi
 import dagger.Binds
 import dagger.Module
@@ -25,17 +24,6 @@ object DataSourceModule {
     fun bindDispatcher(): CoroutineDispatcher {
         return Dispatchers.IO
     }
-
-    @Provides
-    @Singleton
-    fun providePreference(
-        @ApplicationContext context: Context,
-        moshi: Moshi,
-    ): MyMemoSharedPref {
-        return MyMemoSharedPref(context, prefKey, moshi)
-    }
-
-
 }
 
 

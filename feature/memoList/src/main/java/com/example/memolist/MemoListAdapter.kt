@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.memolist.databinding.ItemMemoBinding
 import com.example.model.ShortenMemo
 
-class MemoListAdapter(
+internal class MemoListAdapter(
     private val onClick: (ShortenMemo) -> Unit
 ) : ListAdapter<ShortenMemo, MemoListAdapter.ViewHolder>(itemCallback) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

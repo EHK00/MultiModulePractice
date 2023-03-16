@@ -33,6 +33,7 @@ class MemoListActivity : AppCompatActivity() {
         bindNewMemoButton(binding, vm)
         bindErrorText(binding, vm)
         bindNavigate(vm)
+
     }
 
     override fun onStart() {
