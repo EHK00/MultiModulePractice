@@ -49,11 +49,14 @@ navigator을 구현하여 feature 모듈로, FileProvider을 구현하여 data �
 
 ### 기타 고려 요소
 
-MemoRepositoryImpl에 대한 주입을 app 모듈이 아닌 data 모듈에서 진행하기    
--> data에서 FileProvider가 필요하지 않은 경우 의존 그래프 단순화
-
 ViewModel, UiState reducer 분리   
 -> 현재 viewModel 구조에서 configuration changing에도 데이터를 보존하는 viewModel과 상태 업데이트를 담당하는 uistate reducer를 분리
+
+Data, Domain 모듈을 android library -> Kotlin library로 전환
+
+UI state flow 분리
+->UiState에 상관관계가 없는 데이터가 들어가 있는 경우 UiState에서 하나의 상태가 업데이트될때 불필요한 비용이 발생함. 
+
 
 ### 참고 자료
 

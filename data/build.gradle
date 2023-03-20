@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
-apply from: "$rootDir/config-all.gradle"
+apply from: "$rootDir/config-android-all.gradle"
 apply from: "$rootDir/deps-all.gradle"
 
 android {
