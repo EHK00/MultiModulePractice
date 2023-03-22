@@ -1,6 +1,6 @@
 apply plugin: "kotlin-kapt"
-apply plugin: "com.google.dagger.hilt.android"
 apply plugin: "kotlin-parcelize"
+apply plugin: "com.google.dagger.hilt.android"
 
 dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
