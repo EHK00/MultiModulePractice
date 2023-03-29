@@ -4,9 +4,9 @@ import com.example.model.Memo
 import com.example.model.ShortenMemo
 
 interface MemoRepository {
-    fun getMemo(id: String): Memo?
+    suspend fun getMemo(id: String): Memo?
 
-    fun getShortenMemoList(): List<ShortenMemo>
+    suspend fun getShortenMemoList(): List<ShortenMemo>
 
-    fun saveMemo(memo:Memo): Boolean
+    suspend fun saveMemo(memo:Memo): Boolean
 }

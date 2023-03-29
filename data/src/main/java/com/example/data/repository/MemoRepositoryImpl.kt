@@ -9,15 +9,15 @@ import javax.inject.Inject
 class MemoRepositoryImpl @Inject constructor(
     private val disk: MemoLocalDataSource
 ) : MemoRepository {
-    override fun getMemo(id: String): Memo? {
+    override suspend fun getMemo(id: String): Memo? {
         return disk.getMemo(id)
     }
 
-    override fun getShortenMemoList(): List<ShortenMemo> {
+    override suspend fun getShortenMemoList(): List<ShortenMemo> {
         return disk.getShortenMemoList()
     }
 
-    override fun saveMemo(memo: Memo): Boolean {
+    override suspend fun saveMemo(memo: Memo): Boolean {
         return disk.saveMemo(memo)
     }
 }

@@ -9,10 +9,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.example.common.Navigator
+import com.example.common.distinctAndMap
 import com.example.memolist.databinding.ActivityMemoListBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -44,7 +44,7 @@ class MemoListActivity : AppCompatActivity() {
     private fun bindNavigate(viewModel: MemoListViewModel) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.stateFlow.distinctUntilChangedBy { it.navigateState }.map { it.navigateState }.collect {
+                viewModel.stateFlow.distinctAndMap { it.navigateState }.collect {
                     when (it) {
                         is NavigateState.CreateMemo -> {
                             navigator.gotoCreateMemoScreen(this@MemoListActivity, it.id)
@@ -83,9 +83,9 @@ class MemoListActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.stateFlow.map { it.listState }.collectLatest {
-                    recyclerView.isVisible = it is ListState.OnLoad
-                    adapter.submitList((it as? ListState.OnLoad)?.itemList ?: listOf())
+                viewModel.stateFlow.distinctAndMap { it.listState as? ListState.OnLoad }.collectLatest {
+                    recyclerView.isVisible = it != null
+                    adapter.submitList(it?.itemList ?: listOf())
                 }
             }
         }
