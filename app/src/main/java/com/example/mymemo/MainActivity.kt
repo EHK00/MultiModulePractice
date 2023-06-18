@@ -17,7 +17,7 @@ class MainActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                myNavigator.MyNavHost(navController = )
+                myNavigator.MyNavHost(navController = rememberNavController())
             }
         }
     }

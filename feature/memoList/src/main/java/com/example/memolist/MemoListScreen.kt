@@ -22,21 +22,21 @@ import com.example.model.ShortenMemo
 
 @Composable
 internal fun MemoListScreenView(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     navController: NavController,
     scaffoldState: ScaffoldState = rememberScaffoldState(),
     vm: MemoListViewModel = hiltViewModel(),
 ) {
     val memoListState by vm.stateFlow.collectAsState()
     val onItemClick = { item: ShortenMemo ->
-        navController.navigate("createMemo")
+        navController.navigate("createMemo?memoId=${item.id}")
     }
     val onNewItemClick: () -> Unit = {
         navController.navigate("createMemo")
     }
 
     MemoListScreen(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         scaffoldState = scaffoldState,
         memoListState = memoListState,
         onItemClick = onItemClick,

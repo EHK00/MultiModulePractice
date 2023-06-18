@@ -4,6 +4,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.example.common.NavGraphProvider
+import javax.inject.Inject
 import javax.inject.Qualifier
 
 @Qualifier
@@ -11,11 +12,11 @@ import javax.inject.Qualifier
 @Retention(AnnotationRetention.RUNTIME)
 annotation class MemoListNavGraph
 
-class MemoListNavGraphProvider : NavGraphProvider {
+class MemoListNavGraphProvider @Inject constructor() : NavGraphProvider {
     override fun provide(navController: NavHostController, navGraphBuilder: NavGraphBuilder) {
         with(navGraphBuilder) {
             composable("memoList") {
-                MemoListScreenView(modifier = androidx.compose.ui.Modifier, navController = navController)
+                MemoListScreenView(navController = navController)
             }
         }
     }

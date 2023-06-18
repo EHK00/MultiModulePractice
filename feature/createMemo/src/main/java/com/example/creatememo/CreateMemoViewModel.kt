@@ -29,9 +29,9 @@ internal class CreateMemoViewModel @Inject constructor(
     override val _stateFlow: MutableStateFlow<CreateMemoState> = MutableStateFlow(CreateMemoState.initial)
 
     init {
-        val param = savedStateHandle.get<CreateMemoActivity.Param>(EXTRA_CREATE_MEMO_PARAM)
+        val id: String? = savedStateHandle["memoId"]
         viewModelScope.launch {
-            _stateFlow.value = getMemo(param?.id)
+            _stateFlow.value = getMemo(id)
         }
         observeUiAction()
     }
@@ -48,17 +48,21 @@ internal class CreateMemoViewModel @Inject constructor(
                 is CreateMemoUiAction.InputContentText -> {
                     _stateFlow.update { it.copy(content = action.text) }
                 }
+
                 is CreateMemoUiAction.InputTitleText -> {
                     _stateFlow.update { it.copy(subject = action.text) }
                 }
+
                 is CreateMemoUiAction.SaveMemo -> {
                     _stateFlow.update { it.copy(isLoading = true) }
                     _stateFlow.update { doOnSaveMemo(it) }
                     _stateFlow.update { it.copy(isLoading = false) }
                 }
+
                 is CreateMemoUiAction.AfterShowMessage -> {
                     _stateFlow.update { doOnShowMessage(it, action.message) }
                 }
+
                 CreateMemoUiAction.AfterNavigate ->
                     _stateFlow.update { it.copy(onComplete = false) }
             }
@@ -71,6 +75,7 @@ internal class CreateMemoViewModel @Inject constructor(
             is Resource.Success -> {
                 currentState.copy(onComplete = true)
             }
+
             is Resource.Error -> {
                 val errorMessage = result.error?.message ?: result.error.toString()
                 val notifications = currentState.notifications.toMutableList().apply {
@@ -108,6 +113,7 @@ internal class CreateMemoViewModel @Inject constructor(
                     content = data.memo.content,
                 )
             }
+
             is Resource.Error -> {
                 CreateMemoState(
                     id = UUID.randomUUID().toString(),

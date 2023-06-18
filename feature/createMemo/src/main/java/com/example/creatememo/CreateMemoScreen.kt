@@ -1,5 +1,6 @@
 package com.example.creatememo
 
+import android.os.Parcelable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.rememberScrollableState
@@ -21,11 +22,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.common.UiAction
+import kotlinx.parcelize.Parcelize
 
 
 @Composable
 internal fun CreateMemoScreenView(
-    modifier: Modifier = Modifier,
     vm: CreateMemoViewModel = hiltViewModel(),
     scrollableState: ScrollableState = rememberScrollState(),
     navHostController: NavHostController,
@@ -34,9 +35,14 @@ internal fun CreateMemoScreenView(
     val onSave = { vm.uiAction(CreateMemoUiAction.SaveMemo(state)) }
     val onTitleChange: (String) -> Unit = { vm.uiAction(CreateMemoUiAction.InputTitleText(it)) }
     val onContentChange: (String) -> Unit = { vm.uiAction(CreateMemoUiAction.InputContentText(it)) }
+    LaunchedEffect(state){
+        if(state.onComplete){
+            navHostController.popBackStack()
+        }
+    }
 
     CreateMemoScreen(
-        modifier = modifier,
+        modifier = Modifier.fillMaxWidth(),
         onTitleChange = onTitleChange,
         onContentChange = onContentChange,
         onSave = onSave,
@@ -56,7 +62,7 @@ internal fun CreateMemoScreen(
     scrollableState: ScrollableState = rememberScrollState(),
 ) {
     Scaffold(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
     ) { paddingValues ->
         Column(modifier = modifier.padding(paddingValues)) {
             TextField(
@@ -83,6 +89,11 @@ internal fun CreateMemoScreen(
         }
     }
 }
+
+@Parcelize
+data class Param(
+    val id: String?
+) : Parcelable
 
 @Preview
 @Composable
