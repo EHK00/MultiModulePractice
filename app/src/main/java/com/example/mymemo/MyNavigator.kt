@@ -2,8 +2,8 @@ package com.example.mymemo
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.example.common.MainState
 import com.example.common.NavGraphProvider
 import com.example.creatememo.CreateMemoNavGraph
 import com.example.memolist.MemoListNavGraph
@@ -16,15 +16,16 @@ class MyNavigator @Inject constructor(
 
     @Composable
     fun MyNavHost(
-        navController: NavHostController,
+        mainState: MainState,
     ) {
+        val navController = mainState.navController
         NavHost(
             modifier = Modifier,
             startDestination = "memoList",
             navController = navController,
         ) {
-            createMemoNavGraph.provide(navController, this)
-            memoListNavGraph.provide(navController, this)
+            createMemoNavGraph.provide(mainState, this)
+            memoListNavGraph.provide(mainState, this)
         }
     }
 

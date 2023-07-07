@@ -1,5 +1,6 @@
 package com.example.creatememo
 
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.Resource
@@ -9,13 +10,10 @@ import com.example.common.UiAction
 import com.example.domain.GetMemoUc
 import com.example.domain.SaveMemoUc
 import com.example.model.Memo
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
@@ -134,6 +132,7 @@ internal class CreateMemoViewModel @Inject constructor(
     }
 }
 
+@Stable
 internal data class CreateMemoState(
     val id: String,
     val subject: String,

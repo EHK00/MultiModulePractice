@@ -3,26 +3,20 @@ package com.example.creatememo
 import android.os.Parcelable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableState
-import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.Button
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.common.UiAction
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
+import timber.log.Timber
 
 
 @Composable
@@ -30,16 +24,30 @@ internal fun CreateMemoScreenView(
     vm: CreateMemoViewModel = hiltViewModel(),
     scrollableState: ScrollableState = rememberScrollState(),
     navHostController: NavHostController,
+    snackBarHostState: SnackbarHostState,
 ) {
     val state by vm.stateFlow.collectAsState()
-    val onSave = { vm.uiAction(CreateMemoUiAction.SaveMemo(state)) }
+    val scope = rememberCoroutineScope()
+
+    val onSave: () -> Unit = remember { { vm.uiAction(CreateMemoUiAction.SaveMemo(state)) } }
     val onTitleChange: (String) -> Unit = { vm.uiAction(CreateMemoUiAction.InputTitleText(it)) }
-    val onContentChange: (String) -> Unit = { vm.uiAction(CreateMemoUiAction.InputContentText(it)) }
-    LaunchedEffect(state){
-        if(state.onComplete){
+    val onContentChange: (String) -> Unit = {
+        vm.uiAction(CreateMemoUiAction.InputContentText(it))
+    }
+    val test1 = LaunchedEffect(state.onComplete) {
+        if (state.onComplete) {
             navHostController.popBackStack()
         }
     }
+
+    val test2 = LaunchedEffect(state.content) {
+        scope.launch {
+            snackBarHostState.showSnackbar(state.content)
+        }
+    }
+    Timber.d("__ test1 : ${test1.hashCode()}")
+    Timber.d("__ test2 : ${test2.hashCode()}")
+
 
     CreateMemoScreen(
         modifier = Modifier.fillMaxWidth(),
@@ -68,7 +76,8 @@ internal fun CreateMemoScreen(
             TextField(
                 modifier = modifier,
                 value = state.subject,
-                onValueChange = onTitleChange
+                onValueChange = onTitleChange,
+                singleLine = true
             )
             TextField(
                 modifier = modifier
@@ -98,5 +107,15 @@ data class Param(
 @Preview
 @Composable
 internal fun CreateMemoScreenPreview() {
-    CreateMemoScreen(Modifier.fillMaxWidth())
+    CreateMemoScreen(
+        modifier = Modifier.fillMaxWidth(),
+        state = CreateMemoState(
+            id = "id",
+            subject = "subject",
+            content = "content",
+            notifications = listOf("notifications"),
+            isLoading = false,
+            onComplete = false,
+        )
+    )
 }

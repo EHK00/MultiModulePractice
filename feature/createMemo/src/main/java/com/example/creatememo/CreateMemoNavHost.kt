@@ -1,13 +1,10 @@
 package com.example.creatememo
 
-import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.common.MainState
 import com.example.common.NavGraphProvider
 import javax.inject.Inject
 import javax.inject.Qualifier
@@ -18,7 +15,7 @@ import javax.inject.Qualifier
 annotation class CreateMemoNavGraph
 
 class CreateMemoNavGraphProvider @Inject constructor() : NavGraphProvider {
-    override fun provide(navController: NavHostController, navGraphBuilder: NavGraphBuilder) {
+    override fun provide(mainState: MainState, navGraphBuilder: NavGraphBuilder) {
         with(navGraphBuilder) {
             composable(
                 "createMemo?memoId={memoId}",
@@ -30,7 +27,10 @@ class CreateMemoNavGraphProvider @Inject constructor() : NavGraphProvider {
                     }
                 )
             ) {
-                CreateMemoScreenView(navHostController = navController)
+                CreateMemoScreenView(
+                    navHostController = mainState.navController,
+                    snackBarHostState = mainState.scaffoldState.snackbarHostState
+                )
             }
         }
     }
