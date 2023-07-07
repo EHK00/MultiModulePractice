@@ -13,8 +13,9 @@
         android:theme="@style/Theme.MyMemo"
         tools:targetApi="31">
 
+
         <activity
-            android:name="com.example.memolist.MemoListActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,7 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.creatememo.CreateMemoActivity" />
     </application>
 
 </manifest>

@@ -1,15 +1,38 @@
 package com.example.mymemo.di
 
-import com.example.common.Navigator
-import com.example.mymemo.NavigatorImpl
+import androidx.navigation.NavHost
+import com.example.common.NavGraphProvider
+import com.example.creatememo.CreateMemoNavGraph
+import com.example.creatememo.CreateMemoNavGraphProvider
+import com.example.memolist.MemoListNavGraph
+import com.example.memolist.MemoListNavGraphProvider
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityComponent
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
-@InstallIn(ActivityComponent::class)
+@InstallIn(SingletonComponent::class)
 abstract class NavigatorModule {
     @Binds
-    abstract fun bindNavigator(navigatorImpl: NavigatorImpl): Navigator
+    @CreateMemoNavGraph
+    abstract fun bindCreateMemoNavGraphProvider(provider: CreateMemoNavGraphProvider): NavGraphProvider
+
+    @Binds
+    @MemoListNavGraph
+    abstract fun bindMemoListNavGraphProvider(provider: MemoListNavGraphProvider): NavGraphProvider
 }
+
+//@Module
+//object NavigationModule{
+//    @Provides
+//    @Singleton
+//    fun provideMainNavGraphProvider(
+//        @CreateMemoNavGraph createMemoNavGraph: NavGraphProvider,
+//        @MemoListNavGraph memoListNavGraph: NavGraphProvider,
+//    ): NavHost{
+//    }
+//}

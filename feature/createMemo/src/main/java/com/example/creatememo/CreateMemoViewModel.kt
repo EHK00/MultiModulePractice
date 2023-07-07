@@ -1,5 +1,6 @@
 package com.example.creatememo
 
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.Resource
@@ -9,13 +10,10 @@ import com.example.common.UiAction
 import com.example.domain.GetMemoUc
 import com.example.domain.SaveMemoUc
 import com.example.model.Memo
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
@@ -29,9 +27,9 @@ internal class CreateMemoViewModel @Inject constructor(
     override val _stateFlow: MutableStateFlow<CreateMemoState> = MutableStateFlow(CreateMemoState.initial)
 
     init {
-        val param = savedStateHandle.get<CreateMemoActivity.Param>(EXTRA_CREATE_MEMO_PARAM)
+        val id: String? = savedStateHandle["memoId"]
         viewModelScope.launch {
-            _stateFlow.value = getMemo(param?.id)
+            _stateFlow.value = getMemo(id)
         }
         observeUiAction()
     }
@@ -48,17 +46,21 @@ internal class CreateMemoViewModel @Inject constructor(
                 is CreateMemoUiAction.InputContentText -> {
                     _stateFlow.update { it.copy(content = action.text) }
                 }
+
                 is CreateMemoUiAction.InputTitleText -> {
                     _stateFlow.update { it.copy(subject = action.text) }
                 }
+
                 is CreateMemoUiAction.SaveMemo -> {
                     _stateFlow.update { it.copy(isLoading = true) }
                     _stateFlow.update { doOnSaveMemo(it) }
                     _stateFlow.update { it.copy(isLoading = false) }
                 }
+
                 is CreateMemoUiAction.AfterShowMessage -> {
                     _stateFlow.update { doOnShowMessage(it, action.message) }
                 }
+
                 CreateMemoUiAction.AfterNavigate ->
                     _stateFlow.update { it.copy(onComplete = false) }
             }
@@ -71,6 +73,7 @@ internal class CreateMemoViewModel @Inject constructor(
             is Resource.Success -> {
                 currentState.copy(onComplete = true)
             }
+
             is Resource.Error -> {
                 val errorMessage = result.error?.message ?: result.error.toString()
                 val notifications = currentState.notifications.toMutableList().apply {
@@ -108,6 +111,7 @@ internal class CreateMemoViewModel @Inject constructor(
                     content = data.memo.content,
                 )
             }
+
             is Resource.Error -> {
                 CreateMemoState(
                     id = UUID.randomUUID().toString(),
@@ -128,6 +132,7 @@ internal class CreateMemoViewModel @Inject constructor(
     }
 }
 
+@Stable
 internal data class CreateMemoState(
     val id: String,
     val subject: String,
